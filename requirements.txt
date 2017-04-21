@@ -1,0 +1,6 @@
+fire==0.1.0
+numpy==1.12.1
+opencv-python==3.2.0.7
+six==1.10.0
+tqdm==4.11.2
+webcolors==1.7
