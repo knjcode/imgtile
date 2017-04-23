@@ -64,6 +64,31 @@ def padding_blank(image, left, top, right, bottom, color):
     return pad_img
 
 
+def resize_keep_aspect(image, target_width, target_height, color):
+    height, width = image.shape[:2]
+    height_scale = float(target_height) / height
+    width_scale = float(target_width) / width
+    resize_scale = min(height_scale, width_scale)
+
+    if (width >= height):
+        roi_width = target_width
+        roi_height = height * resize_scale
+        roi_x = 0
+        roi_y = int(math.floor((target_height - roi_height) / 2))
+    else:
+        roi_y = 0
+        roi_height = target_height
+        roi_width = width * resize_scale
+        roi_x = int(math.floor((target_width - roi_width) / 2))
+
+    roi_width = int(math.floor(roi_width))
+    roi_height = int(math.floor(roi_height))
+
+    resized_img = cv2.resize(image, (roi_width, roi_height))
+    resized_img = padding_blank(resized_img, roi_x, roi_y, target_width - roi_width - roi_x, target_height - roi_height - roi_y, color)
+    return resized_img
+
+
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
@@ -97,7 +122,10 @@ def collect(target, output='output.png', per_subdir=False, size='128x128', keep_
     for filename in tqdm(filename_list, desc='Loading images', disable=(not progress)):
         img = cv2.imread(filename)
         resize_x, resize_y = int(size.split('x')[0]), int(size.split('x')[1])
-        part_img = cv2.resize(img, (resize_x, resize_y))
+        if keep_aspect:
+            part_img = resize_keep_aspect(img, resize_x, resize_y, space_color)
+        else:
+            part_img = cv2.resize(img, (resize_x, resize_y))
         if space > 0:
             part_img = padding_blank(part_img, space, space, 0, 0, space_color)
         image_list.append(part_img)

@@ -74,7 +74,7 @@ Then, open output.png
   $ ./imgtile.py target_dir --size 64x64
   ```
 
-- Keep aspect ratio (Not implemented yet)
+- Keep aspect ratio
 
   `--keep-aspect` (default 'False')
 
