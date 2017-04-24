@@ -74,6 +74,16 @@ Then, open output.png
   $ ./imgtile.py target_dir --size 64x64
   ```
 
+- Specify interpolation methods
+
+  `--interpolation` (default INTER_LINEAR)
+
+  ```
+  $ ./imgtile.py target_dir --interpolation INTER_LANCOZ4
+  ```
+
+  You can specify OpenCV interpolation methods: INTER_NEAREST, INTER_LINEAR, INTER_AREA, INTER_CUBIC, INTER_LANCZOS4, etc.
+
 - Keep aspect ratio
 
   `--keep-aspect` (default 'False')

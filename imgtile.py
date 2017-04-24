@@ -28,14 +28,15 @@ def find_all_files(target_dir):
                 yield os.path.join(root, filename)
 
 
-def find_all_files_per_subdir(target, size, keep_aspect, space, space_color, tile_num, limit, imgcat, progress):
+def find_all_files_per_subdir(target, size, interpolation, keep_aspect, space, space_color, tile_num, limit, imgcat, progress):
     subdir_list = next(os.walk(target))[1]
     for subdir in subdir_list:
         subdirpath = os.path.join(target, subdir)
         output_filename = subdirpath + '.png'
         print("Target:", subdirpath)
-        collect(subdirpath, output_filename, False, size, keep_aspect,
-                space, space_color, tile_num, limit, imgcat, progress)
+        collect(subdirpath, output_filename, False, size, interpolation,
+                keep_aspect, space, space_color, tile_num, limit, imgcat,
+                progress)
 
 
 def imgcat_for_iTerm2(filename):
@@ -64,7 +65,7 @@ def padding_blank(image, left, top, right, bottom, color):
     return pad_img
 
 
-def resize_keep_aspect(image, target_width, target_height, color):
+def resize_keep_aspect(image, target_width, target_height, color, interpolation=1):
     height, width = image.shape[:2]
     height_scale = float(target_height) / height
     width_scale = float(target_width) / width
@@ -84,7 +85,7 @@ def resize_keep_aspect(image, target_width, target_height, color):
     roi_width = int(math.floor(roi_width))
     roi_height = int(math.floor(roi_height))
 
-    resized_img = cv2.resize(image, (roi_width, roi_height))
+    resized_img = cv2.resize(image, (roi_width, roi_height), interpolation=interpolation)
     resized_img = padding_blank(resized_img, roi_x, roi_y, target_width - roi_width - roi_x, target_height - roi_height - roi_y, color)
     return resized_img
 
@@ -94,12 +95,12 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-def collect(target, output='output.png', per_subdir=False, size='128x128', keep_aspect=False, space='0', space_color='black', tile_num=0, limit=False, imgcat=False, progress=False):
+def collect(target, output='output.png', per_subdir=False, size='128x128', interpolation='INTER_LINEAR', keep_aspect=False, space='0', space_color='black', tile_num=0, limit=False, imgcat=False, progress=False):
     filename_list = []
     if (per_subdir):
         print("Create images per subdir. `--output` option is ignored.")
         find_all_files_per_subdir(
-            target, size, keep_aspect, space, space_color, tile_num, limit, imgcat, progress)
+            target, size, interpolation, keep_aspect, space, space_color, tile_num, limit, imgcat, progress)
         return
     else:
         if (os.path.isdir(target)):
@@ -118,14 +119,15 @@ def collect(target, output='output.png', per_subdir=False, size='128x128', keep_
     space = int(space)
     if isinstance(space_color, string_types):
         space_color = webcolors.name_to_rgb(space_color)
+    interpolation = getattr(cv2, interpolation, 1)
     image_list = []
     for filename in tqdm(filename_list, desc='Loading images', disable=(not progress)):
         img = cv2.imread(filename)
         resize_x, resize_y = int(size.split('x')[0]), int(size.split('x')[1])
         if keep_aspect:
-            part_img = resize_keep_aspect(img, resize_x, resize_y, space_color)
+            part_img = resize_keep_aspect(img, resize_x, resize_y, space_color, interpolation=interpolation)
         else:
-            part_img = cv2.resize(img, (resize_x, resize_y))
+            part_img = cv2.resize(img, (resize_x, resize_y), interpolation=interpolation)
         if space > 0:
             part_img = padding_blank(part_img, space, space, 0, 0, space_color)
         image_list.append(part_img)
