@@ -146,8 +146,11 @@ def collect(target, output='output.png', per_subdir=False, size='128x128', inter
 
     stdout.write(b'Saving... ')
     stdout.flush()
-    cv2.imwrite(output, result_img)
-    stdout.write(b'\rSaved: %s\n' % output.encode('utf8'))
+    if cv2.imwrite(output, result_img):
+        stdout.write(b'\rSaved: %s\n' % output.encode('utf8'))
+    else:
+        stdout.write(b'\rError: Failed to save %s\n' % output.encode('utf8'))
+        sys.exit(1)
 
     if imgcat:
         imgcat_for_iTerm2(output)
