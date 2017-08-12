@@ -2,7 +2,9 @@
 
 A script to tile images.
 
-# Samples
+# Examples
+
+There are 100 face images in 100faces directory.
 
 ## Tile 100 faces
 
